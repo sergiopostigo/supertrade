@@ -10,9 +10,9 @@ landing zone.
 
 import os
 from database_settings import mongo_utilities
-from utilities import ingest
+from utilities import batch_ingest, headings_ingest
 
-def main():
+def load_exports():
 
     # Get all the paths of the files to upload
     folder = '../../data/temporal_landing/x/'
@@ -22,7 +22,12 @@ def main():
     db = mongo_utilities.connect()
 
     # Perform the ingestion
-    ingest(files, db, collection_name='peru_exports', loading_type='incremental')
+    batch_ingest(files, db, collection_name='peru_exports', loading_type='incremental')
+
+def main():
+
+    load_exports()
+
 
 if __name__ == '__main__':
     main()
