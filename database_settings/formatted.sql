@@ -1,0 +1,7 @@
+CREATE TABLE peru_exports_headings (
+
+    HEADING NUMERIC (10) PRIMARY KEY,
+    DESCRIPTION VARCHAR (150),
+    MAPPED_TO NUMERIC (10)
+
+);

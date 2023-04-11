@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 def get_credentials():
 
     credentials = {
-        'DB_NAME' : "persistent",
+        'DB_NAME' : "formatted",
         'DB_USER' : "postgres",
         'DB_PASS' : "1234",
         'DB_HOST' : "localhost",
