@@ -15,6 +15,8 @@ def get_spark_df(collection):
         .config("spark.mongodb.write.connection.uri", mongo_uri) \
         .getOrCreate()
 
+    spark.sparkContext.setLogLevel("ERROR")
+
     # Create a dataframe
     df = spark.read.format("com.mongodb.spark.sql.DefaultSource").options(**mongo_config).load()
 

@@ -15,7 +15,7 @@ def connect():
     try:
         client = MongoClient(credentials['DB_HOST'], credentials['DB_PORT'])
         db = client[credentials['DB_NAME']]
-        print("Database connected successfully!")
+        print("Connected to Persistent Zone successfully!")
         return db # Returns the db cursor
     except Exception as e:
         print("An exception occurred ::", e)

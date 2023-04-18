@@ -21,21 +21,28 @@ def connect():
                                 password=credentials['DB_PASS'],
                                 host=credentials['DB_HOST'],
                                 port=credentials['DB_PORT'])
-        print("Database connected successfully")
+        print("Connected to Formatted Zone successfully!")
         return conn
     except:
-        print("Database not connected successfully")
+        print("Connection to Formatted Zone failed")
 
 def engine():
 
     credentials = get_credentials()
-    engine = create_engine('postgresql+psycopg2://{}:{}@{}/{}'.format(
-        credentials['DB_USER'],
-        credentials['DB_PASS'],
-        credentials['DB_HOST'],
-        credentials['DB_NAME']
-    ))
-    return engine
+    try:
+        engine = create_engine('postgresql+psycopg2://{}:{}@{}/{}'.format(
+            credentials['DB_USER'],
+            credentials['DB_PASS'],
+            credentials['DB_HOST'],
+            credentials['DB_NAME']
+        ))
+        print("Connected to Formatted Zone successfully!")
+
+        return engine
+    except:
+        print("Connection to Formatted Zone failed")
+
+
 
 
 
