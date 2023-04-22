@@ -15,9 +15,11 @@ def main():
     file_name = ''
 
     # Import the manually curated CSV
-    curated_hs = pd.read_csv('./' + file_name, dtype={"heading": "string"})
-    curated_hs['heading'] = curated_hs['heading'].apply(
-        lambda x: x.zfill(10))  # during curation, zero padding may have been removed, so add it if needed
+    curated_hs = pd.read_csv('./' + file_name, dtype={"heading": "string", "mapped_to": "string"})
+    # during curation, zero padding may have been removed, so add it if needed
+    curated_hs['heading'] = curated_hs['heading'].apply(lambda x: x.zfill(10))
+    curated_hs['mapped_to'] = curated_hs['mapped_to'].apply(lambda x: x.zfill(10) if not pd.isnull(x) else x)
+    curated_hs
 
     # Add it to the formatted zone
     # Establish the connection with the database

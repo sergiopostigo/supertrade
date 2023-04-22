@@ -12,12 +12,14 @@ from data_formatter import utilities
 def main():
 
     # EDIT HERE (add the name of the file created in part 1)
-    file_name = ''
+    file_name = 'hs_curated_1680276488571.csv'
 
     # Import the manually curated CSV
-    curated_hs = pd.read_csv('./' + file_name, dtype={"heading": "string"})
+    curated_hs = pd.read_csv('./' + file_name, dtype={"heading": "string", "mapped_to": "string"})
+    # during curation, zero padding may have been removed, so add it if needed
     curated_hs['heading'] = curated_hs['heading'].apply(
-        lambda x: x.zfill(10))  # during curation, zero padding may have been removed, so add it if needed
+        lambda x: x.zfill(10))
+    curated_hs['mapped_to'] = curated_hs['mapped_to'].apply(lambda x: x.zfill(10) if not pd.isnull(x) else x)
 
     # Add it to the formatted zone
     # Establish the connection with the database

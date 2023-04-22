@@ -1,5 +1,5 @@
 import psycopg2
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 def get_credentials():
 
@@ -43,7 +43,16 @@ def engine():
         print("Connection to Formatted Zone failed")
 
 
+def run_query_file(engine, path, params=None):
 
+    with open(path, 'r') as f:
+        query = f.read()
+        if params:
+            query = text(query).bindparams(**params)
+
+    results = engine.execute(query).fetchall()
+
+    return results
 
 
 
