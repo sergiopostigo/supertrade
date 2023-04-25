@@ -1,6 +1,7 @@
 WITH peru_exports_corrected as ( SELECT COALESCE(hs2.heading, hs1.heading) as heading,
                                         COALESCE(hs1.description, hs2.description) as description,
                                         exp.description as details,
+                                        exp.exp_id as exporter_id,
                                         net_weight,
                                         gross_weight,
                                         value_usd,
