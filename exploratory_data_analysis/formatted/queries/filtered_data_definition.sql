@@ -2,17 +2,20 @@ WITH peru_exports_corrected as ( SELECT COALESCE(hs2.heading, hs1.heading) as he
                                         COALESCE(hs1.description, hs2.description) as description,
                                         exp.description as details,
                                         exp.exp_id as exporter_id,
-                                        net_weight,
-                                        gross_weight,
-                                        value_usd,
-                                        country,
-                                        TO_DATE(boarding_date, 'YYYYmmdd') AS boarding_date,
-                                        batch_week
+                                        exp.net_weight,
+                                        exp.gross_weight,
+                                        exp.value_usd,
+                                        exp.country,
+                                        TO_DATE(exp.boarding_date, 'YYYYmmdd') AS boarding_date,
+                                        exp.batch_week
         FROM peru_exports exp
         LEFT JOIN peru_exports_headings hs1 ON exp.heading = hs1.heading
-        LEFT JOIN peru_exports_headings hs2 ON hs1.mapped_to = hs2.heading)
+        LEFT JOIN peru_exports_headings hs2 ON hs1.mapped_to = hs2.heading
+        WHERE DATE_PART('YEAR',TO_DATE(exp.boarding_date, 'YYYYmmdd')) >= :year_threshold
+        AND exp.value_usd >= :value_usd_threshold
+        AND exp.net_weight >= :net_weight_threshold)
 
-SELECT COUNT(*)*1.0/(SELECT COUNT(*) FROM peru_exports_corrected) as proportion
+SELECT COUNT(*)*1.0/(SELECT COUNT(*) FROM peru_exports) as proportion
 FROM peru_exports_corrected
 WHERE heading IN (
     SELECT heading
@@ -20,6 +23,3 @@ WHERE heading IN (
     GROUP BY heading
     HAVING COUNT(*) >= :headings_count_threshold
 )
-AND DATE_PART('YEAR',boarding_date) >= :year_threshold
-AND value_usd >= :value_usd_threshold
-AND net_weight >= :net_weight_threshold

@@ -26,7 +26,7 @@ def connect():
     except:
         print("Connection to Formatted Zone failed")
 
-def engine():
+def engine(message_flag=True):
 
     credentials = get_credentials()
     try:
@@ -36,7 +36,8 @@ def engine():
             credentials['DB_HOST'],
             credentials['DB_NAME']
         ))
-        print("Connected to Formatted Zone successfully!")
+        if message_flag:
+            print("Connected to Formatted Zone successfully!")
 
         return engine
     except:
@@ -50,9 +51,15 @@ def run_query_file(engine, path, params=None):
         if params:
             query = text(query).bindparams(**params)
 
-    results = engine.execute(query).fetchall()
+    try:
+        results = engine.execute(query)
+        if results.returns_rows:
+            return results.fetchall()
+        else:
+            print('Query run successfully!')
 
-    return results
+    except Exception as e:
+        print(f"An error occurred while executing the query: {e}")
 
 
 

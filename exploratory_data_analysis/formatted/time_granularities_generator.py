@@ -1,18 +1,24 @@
+"""
+Formatted Zone
+Time Granularities Generator
+
+Create the cyclic granularities given a range of dates. All the functions needed for this are defined here.
+For now, the smallest linear granularity is day, and the larger year.
+
+"""
+
+
 import pandas as pd
 import datetime
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from scipy.spatial.distance import jensenshannon
-from scipy import stats
-import itertools
 
 
-def generate_time_granularities(start_date, end_date):
+def generate(start_date, end_date):
 
     """Return time granularities
 
-    Given two dates, return the cyclic granularities:
+    Given two dates, return the cyclic granularities and the priority of those granularities. The priority ranking
+    represents the order in which the potential seasonalities must be extracted from the time-series:
 
     year, semester_in_year, quarter_in_year, month_in_year, month_in_semester, month_in_quarter, quarter_in_semester,
     day_in_year, day_in_semester, day_in_quarter, day_in_month, day_in_week, week_in_year, week_in_semester,
@@ -24,6 +30,7 @@ def generate_time_granularities(start_date, end_date):
 
     Returns:
         time_granularities (dataframe): dataframe with time granularities
+        granularity_priority (list): list with the priority of granularities
     """
 
     # Generate the date index range with day frequency
@@ -54,7 +61,11 @@ def generate_time_granularities(start_date, end_date):
 
     time_granularities = time_granularities.astype(str)
 
-    return time_granularities
+    # Get priority list
+    granularity_priority = sorted(time_granularities.columns, key=lambda x: time_granularities[x].nunique(),
+                                  reverse=True)
+
+    return time_granularities, granularity_priority
 
 ## FOR DAYS COUNT GENERATIONS
 
@@ -122,7 +133,7 @@ def is_first_thursday_of_month(date):
     if date.weekday() == 3 and date.day <= 7:
         return 'first_thursday'
     else: return 0
-#%%
+
 def is_first_thursday_of_quarter(date):
     if date.month ==1 and date.weekday() == 3 and date.day <= 7:
         return 'first_thursday'
@@ -133,7 +144,7 @@ def is_first_thursday_of_quarter(date):
     elif date.month ==10 and date.weekday() == 3 and date.day <= 7:
         return 'first_thursday'
     else: return 0
-#%%
+
 def is_first_thursday_of_semester(date):
     if date.month ==1 and date.weekday() == 3 and date.day <= 7:
         return 'first_thursday'
@@ -229,81 +240,3 @@ def week_in_quarter(start_date, end_date):
     return df
 
 
-
-
-def jensen_shannon(*samples):
-
-    # Get the max and min observation among all the data
-    all_observations = [observation for sample in samples for observation in sample]
-    max_observation = max(all_observations)
-    min_observation = min(all_observations)
-
-    # Define the bins
-    n_bins = 10
-    bins = np.linspace(min_observation, max_observation, n_bins+1)
-
-    # Create the probability vector for each sample
-    probability_vectors = []
-    for sample in samples:
-        # take the observations of the respective sample
-        observations = np.array(sample)
-        # count the ocurrences in each bin
-        freq_count, bin_edges = np.histogram(observations, bins=bins)
-        # calculate the probability of each bin
-        probability_vector = freq_count/len(observations)
-        # append to the probability vectors list
-        probability_vectors.append(probability_vector)
-
-    # Get the Jensen-Shannon Distances from all pairs
-    pairs = itertools.combinations(probability_vectors, 2)
-    jensen_shanon_distances = []
-    for pair in pairs:
-        jsd = jensenshannon(pair[0], pair[1],base=2)
-        jensen_shanon_distances.append(jsd)
-
-    # Get the Jensen-Shannon Distances from consecutive samples (time wise speaking)
-    # jensen_shanon_distances = []
-    # for i in range(len(probability_vectors) - 1):
-    #     jsd = jensenshannon(probability_vectors[i], probability_vectors[i+1], 2)
-    #     jensen_shanon_distances.append(jsd)
-
-    return max(jensen_shanon_distances)
-
-def time_granularity_analysis(cyclic_granularity, observations, data, distance_metric, plot, outliers, n_resamples=1000):
-
-    # Measure seasonality
-    # Get the observations from each subset from the time granularity (sorted by label in ascending order)
-    samples = [data.loc[data[cyclic_granularity] == str(subset), observations].values
-               for subset in sorted(map(int, data[cyclic_granularity].unique()))]
-    # Remove samples with less than 2 observations (caused by leap years, from 2024 this won't be needed)
-    samples = [sample for sample in samples if len(sample) >= 2]
-    # Remove outliers
-    #samples = [sample[(np.abs(sample - np.mean(sample)) < (1.5*np.std(sample)))] for sample in samples]
-
-    # Permutation test (statistic: max Jensen Shannon Distance between pairs of subsets)
-    res = stats.permutation_test(samples, distance_metric, n_resamples=n_resamples, alternative='greater')
-
-    # PLOTS:
-    # Distribution's plot
-    if plot==True:
-        fig, axs = plt.subplots(ncols=2, figsize=(18,6))
-        sns.boxenplot(data=data,
-                        x=cyclic_granularity,
-                        y=observations,
-                        order=[str(i) for i in data[cyclic_granularity].astype(int).sort_values().unique()],
-                        k_depth=2,
-                        showfliers = outliers,
-                        palette=['#abaef3'],
-                        ax=axs[0])
-        axs[0].set_title('{} @ {}'.format(observations, cyclic_granularity))
-
-        # Histogram with the statistics gotten from each permutation
-        axs[1].hist(res.null_distribution, bins=100)
-        axs[1].set_title("Permutation distribution of test statistic")
-        axs[1].set_xlabel("Value of Statistic")
-        axs[1].set_ylabel("Frequency")
-        axs[1].axvline(res.statistic, color='red', linestyle='dashed', linewidth=2)
-        axs[1].text(axs[1].get_xlim()[1]*0.97, axs[1].get_ylim()[1]*0.95, 'Statistic: {:.4f}\np-value: {:.4f}'.format(res.statistic, res.pvalue), ha='right', va='top', fontsize=12)
-        plt.show()
-
-    return {cyclic_granularity: {'statistic':res.statistic, 'pvalue':res.pvalue}}

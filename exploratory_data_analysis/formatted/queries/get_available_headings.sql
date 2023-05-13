@@ -1,6 +1,5 @@
-/* Correct the headings if necessary,
-   correct the heading descriptions if necessary,
-   */
+/* Get all the distinct available headings after all filters */
+
 WITH peru_exports_corrected as ( SELECT COALESCE(hs2.heading, hs1.heading) as heading,
                                         COALESCE(hs1.description, hs2.description) as description,
                                         exp.description as details,
@@ -18,7 +17,7 @@ WITH peru_exports_corrected as ( SELECT COALESCE(hs2.heading, hs1.heading) as he
         AND exp.value_usd >= :value_usd_threshold
         AND exp.net_weight >= :net_weight_threshold)
 
-SELECT *
+SELECT DISTINCT heading
 FROM peru_exports_corrected
 WHERE heading IN (
     SELECT heading
@@ -26,4 +25,4 @@ WHERE heading IN (
     GROUP BY heading
     HAVING COUNT(*) >= :headings_count_threshold
 )
-ORDER BY boarding_date ASC
+ORDER BY heading ASC
