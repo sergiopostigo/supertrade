@@ -19,7 +19,7 @@ def main():
 
     # Create a dataframe applying the following basic formatting:
     # - Merge the descriptions in a single column, replace NaN values by '' and trim white spaces
-    # - Replace those exporter codes with value 'No Disponib' by unknow
+    # - Replace those exporter codes with value 'No Disponib' by unknown
     print("Performing query on Persistent Zone...")
     df = spark_utilities.get_spark_df('peru_exports') \
         .select('PART_NANDI', 'VPESNET', 'VPESBRU', 'VFOBSERDOL', 'CPAIDES', 'NDOC', 'FEMB', 'DCOM', 'DMER2', 'DMER3',

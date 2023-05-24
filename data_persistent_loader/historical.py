@@ -18,22 +18,16 @@ def load_exports():
     folder = '../../data/temporal_landing/x/'
     files = [os.path.join(folder, f) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
 
-    # Establish the connection to the database (persistent)
-    db = mongo_utilities.connect()
-
     # Perform the ingestion
-    batch_ingest(files, db, collection_name='peru_exports', loading_type='historical')
+    batch_ingest(files, loading_type='historical')
 
 def load_headings():
 
     # Get the path of the headings file
     file = '../../data/temporal_landing/support/NANDINA.TXT'
 
-    # Establish the connection to the database (persistent)
-    db = mongo_utilities.connect()
-
     # Perform the ingestion
-    headings_ingest(file, db, collection_name='peru_exports_headings', loading_type='historical')
+    headings_ingest(file, loading_type='historical')
 
 def main():
 

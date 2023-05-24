@@ -11,8 +11,10 @@ from simpledbf import Dbf5
 from datetime import datetime
 import pandas as pd
 import re
+from database_settings import mongo_utilities
 
-def batch_ingest(dbf_paths, database, collection_name, loading_type):
+
+def batch_ingest(dbf_paths, loading_type):
 
     """Ingest the batches files in MongoDB
 
@@ -20,18 +22,21 @@ def batch_ingest(dbf_paths, database, collection_name, loading_type):
        the ingestion.
 
        Args:
-           dbf_paths (string): path of the DBF files to ingest
-           database: MongoDB database object
-           collection_name (string): name of the collection to ingest into
+           dbf_paths (list): path of the DBF files to ingest
            loading_type (string): historical or incremental (used for the log)
 
        """
+
+    # Establish the connection to the database (persistent)
+    database = mongo_utilities.connect()
 
     # Raise an error if the collection type is invalid
     valid_collection_types = {'incremental', 'historical'}
     if loading_type not in valid_collection_types:
         raise ValueError("loading type must be one of %r." % valid_collection_types)
 
+    # Define the collection name
+    collection_name = 'peru_exports'
     # Use (or create) the collection
     collection = database[collection_name]
 
@@ -85,7 +90,7 @@ def batch_ingest(dbf_paths, database, collection_name, loading_type):
         print('No batches to load')
 
 
-def headings_ingest(file_path, database, collection_name, loading_type):
+def headings_ingest(file_path, loading_type):
 
     """Ingest the headings file (NANDINA.txt) in MongoDB
 
@@ -94,11 +99,11 @@ def headings_ingest(file_path, database, collection_name, loading_type):
 
            Args:
                file_path (string): path of the NANDINA.txt file to ingest
-               database: MongoDB database object
-               collection_name (string): name of the collection to ingest into
                loading_type (string): historical or incremental (used for the log)
 
            """
+    # Establish the connection to the database (persistent)
+    database = mongo_utilities.connect()
 
     # Raise an error if the collection type is invalid
     valid_collection_types = {'incremental', 'historical'}
@@ -106,6 +111,8 @@ def headings_ingest(file_path, database, collection_name, loading_type):
     if loading_type not in valid_collection_types:
         raise ValueError("loading type must be one of %r." % valid_collection_types)
 
+    # Define the collection name
+    collection_name = 'peru_exports_headings'
     # Use (or create) the collection
     collection = database[collection_name]
 

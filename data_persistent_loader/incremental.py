@@ -9,8 +9,7 @@ landing zone.
 """
 
 import os
-from database_settings import mongo_utilities
-from utilities import batch_ingest, headings_ingest
+from utilities import batch_ingest
 
 def load_exports():
 
@@ -18,11 +17,8 @@ def load_exports():
     folder = '../../data/temporal_landing/x/'
     files = [os.path.join(folder, f) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
 
-    # Establish the connection to the database (persistent)
-    db = mongo_utilities.connect()
-
     # Perform the ingestion
-    batch_ingest(files, db, collection_name='peru_exports', loading_type='incremental')
+    batch_ingest(files, loading_type='incremental')
 
 def main():
 
