@@ -5,8 +5,22 @@ from datetime import datetime
 
 
 def add_file_to_hdfs(file_path, hdfs_directory, log_context):
+
+    """Add a file to HDFS
+
+        Copy a file from the local filesystem into HDFS.
+
+        Args:
+            files_folder (str): Path to the exports folder in the temporal landing zone.
+            log_context (str): Context to add in the log file.
+
+        Returns:
+            int: Returns 0 if the file was successfully stored in HDFS, and 1 otherwise.
+
+    """
+
     # Construct the HDFS command
-    insert_cmd = 'hadoop fs -put {} {}'.format(file_path, hdfs_directory)
+    insert_cmd = 'hadoop fs -put -f {} {}'.format(file_path, hdfs_directory)
     # Execute the HDFS command
     subprocess.run(insert_cmd, shell=True, capture_output=True, text=True)
     # Check if the file was properly uploaded
@@ -27,6 +41,4 @@ def add_file_to_hdfs(file_path, hdfs_directory, log_context):
                        hdfs_directory]
         logs.to_csv('./log.csv', mode='a', index=False,
                     header=not os.path.exists('./log.csv'))
-        # Delete the parquet file from the temporal landing zone
-        os.remove(file_path)
         return 0

@@ -12,6 +12,22 @@ def get_credentials():
     }
     return credentials
 
+def spark2postgres():
+
+    credentials = get_credentials()
+
+    # Set the PostgreSQL connection properties
+    properties = {
+        "driver": "org.postgresql.Driver",
+        "url": "jdbc:postgresql://{}:{}/{}".format(credentials['DB_HOST'],
+                                                   credentials['DB_PORT'],
+                                                   credentials['DB_NAME']),
+        "user": credentials['DB_USER'],
+        "password": credentials['DB_PASS'],
+
+    }
+    return properties
+
 def connect():
 
     credentials = get_credentials()

@@ -2,28 +2,26 @@
 Data Persistence Loader
 Incremental Load
 
-This script ingests the files in the temporal landing zone into the persistent zone in a MongoDB database.
+This script ingests the files in the temporal landing zone into the persistent zone in HDFS.
 Note that the files ingested with this script are those downloaded in the incremental collection in the temporal
 landing zone.
 
 """
 
-import os
-from utilities import batch_ingest
+from project_settings import env
+from utilities import exports_ingestion
 
 def load_exports():
 
     # Get all the paths of the files to upload
-    folder = '../../data/temporal_landing/x/'
-    files = [os.path.join(folder, f) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-
+    folder = env.TEMPORAL_LANDING_FOLDER+'x/'
     # Perform the ingestion
-    batch_ingest(files, loading_type='incremental')
+    exports_ingestion(files_folder=folder, log_context='incremental')
 
 def main():
 
+    print('--DATA PERSISTENT ZONE INCREMENTAL LOAD--')
     load_exports()
-
 
 if __name__ == '__main__':
     main()

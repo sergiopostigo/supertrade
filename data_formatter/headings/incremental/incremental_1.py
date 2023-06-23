@@ -13,6 +13,8 @@ import pandas as pd
 import time
 from database_settings import postgres_utilities
 from data_formatter import utilities
+from database_settings.spark_utilities import get_spark_df, spark_session
+
 
 def main():
 
@@ -26,8 +28,12 @@ def main():
     # Read the headings table
     existing_headings = pd.read_sql_table('peru_exports_headings', engine)
 
+    # Spark session
+    spark = spark_session()
+
     # Get the headings in the Persistent Zone that do not exist in the Formatted Zone (those starting with the digits in the headings list defined above)
-    headings_to_format = spark_utilities.get_spark_df('peru_exports') \
+    exports_path = '/thesis/peru/exports/*.parquet'  # Files in the Persistent Zone
+    headings_to_format = get_spark_df(spark_session=spark, file_path=exports_path) \
         .select('PART_NANDI') \
         .distinct() \
         .withColumn("heading", lpad(col("PART_NANDI").cast("string"), 10, "0")) \
@@ -37,7 +43,8 @@ def main():
         .toPandas()
 
     # Get the labeled headings from the persistent zone
-    headings_labeled = spark_utilities.get_spark_df('peru_exports_headings') \
+    headings_path = '/thesis/peru/headings/headings.parquet'  # Files in the Persistent Zone
+    headings_labeled = get_spark_df(spark_session=spark, file_path=headings_path) \
         .select('0', '1') \
         .distinct() \
         .withColumnRenamed('1', 'raw_description') \

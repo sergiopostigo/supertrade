@@ -10,6 +10,8 @@ from database_settings import spark_utilities
 from pyspark.sql.functions import col, lpad, concat_ws, regexp_replace, trim, to_date
 from database_settings import postgres_utilities
 from data_formatter import utilities
+from database_settings.postgres_utilities import spark2postgres
+from database_settings.spark_utilities import get_spark_df, spark_session
 
 def main():
 
@@ -33,9 +35,13 @@ def main():
     last_day_of_data = cur.fetchone()[0]
     print('Most recent batch: {}'.format(last_day_of_data))
 
+    # Spark session
+    spark = spark_session()
+
     # Get new data from the Persistent Zone
     print("Performing query on Persistent Zone...")
-    df = spark_utilities.get_spark_df('peru_exports') \
+    exports_path = '/thesis/peru/exports/*.parquet'  # exports path in HDFS
+    df = get_spark_df(spark_session=spark, file_path=exports_path) \
         .select('PART_NANDI', 'VPESNET', 'VPESBRU', 'VFOBSERDOL', 'CPAIDES', 'NDOC', 'FEMB', 'DCOM', 'DMER2', 'DMER3',
                 'DMER4', 'DMER5', 'BATCH_WEEK') \
         .withColumn("heading", lpad(col("PART_NANDI").cast("string"), 10, "0")) \
@@ -53,20 +59,24 @@ def main():
         .withColumnRenamed('FEMB', 'boarding_date') \
         .withColumnRenamed('BATCH_WEEK', 'batch_week') \
         .select('heading', 'exp_id', 'net_weight', 'gross_weight', 'value_usd', 'country', 'boarding_date',
-                "description", 'batch_week') \
-        .toPandas()
+                "description", 'batch_week')
 
-    # Add it to the formatted zone
-    # Establish the connection with the database
-    engine = postgres_utilities.engine()
+    if df.count() > 0:
+        # Write the DataFrame to the PostgreSQL database
+        print("Sending data to PostgreSQL...")
+        try:
+            df.write \
+                .format("jdbc") \
+                .option("dbtable", "peru_exports") \
+                .options(**spark2postgres()) \
+                .mode('append') \
+                .save()
+            print("Data sent to Formatted Zone successfully: {} rows added".format(df.count()))
 
-    # Rename the columns and write in the database
-    try:
-        df.to_sql('peru_exports', engine, if_exists='append', index=False)
-        print("Data sent to Formatted Zone successfully: {} rows added".format(len(df)))
-
-    except Exception as e:
-        print(f"Error while sending data to Formatted Zone: {e}")
+        except Exception as e:
+            print(f"Error while sending data to Formatted Zone: {e}")
+    else:
+        print('Nothing to add to the Formatted Zone')
 
 
 if __name__ == '__main__':

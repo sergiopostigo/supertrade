@@ -2,35 +2,34 @@
 Data Persistence Loader
 Historical Load
 
-This script ingests the files in the temporal landing zone into the persistent zone in a MongoDB database.
+This script ingests the files in the temporal landing zone into the persistent zone in HDFS.
 Note that the files ingested with this script are those downloaded in the historical collection in the temporal
 landing zone.
 
 """
 
-import os
-from database_settings import mongo_utilities
-from utilities import batch_ingest, headings_ingest
+from project_settings import env
+from utilities import exports_ingestion, headings_ingestion
 
 def load_exports():
 
+    print('Exports historical load into HDFS...')
     # Get all the paths of the files to upload
-    folder = '../../data/temporal_landing/x/'
-    files = [os.path.join(folder, f) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-
+    folder = env.TEMPORAL_LANDING_FOLDER+'x/'
     # Perform the ingestion
-    batch_ingest(files, loading_type='historical')
+    exports_ingestion(files_folder=folder, log_context='historical')
 
 def load_headings():
 
+    print('Headings historical load into HDFS...')
     # Get the path of the headings file
-    file = '../../data/temporal_landing/support/NANDINA.TXT'
-
+    file = env.TEMPORAL_LANDING_FOLDER + '/headings/NANDINA.txt'
     # Perform the ingestion
-    headings_ingest(file, loading_type='historical')
+    headings_ingestion(file_path=file, log_context='historical')
 
 def main():
 
+    print('--DATA PERSISTENT ZONE HISTORICAL LOAD--')
     load_exports()
     load_headings()
 
