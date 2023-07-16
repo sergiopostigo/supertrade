@@ -113,16 +113,16 @@ class time_granularity_analysis:
                         order=[str(i) for i in self.data[self.cyclic_granularity].astype(int).sort_values().unique()],
                         k_depth=2,
                         showfliers = outliers,
-                        palette=['#abaef3'],
+                        palette=['#B20E0F'],
                         ax=axs[0])
         axs[0].set_title('{} @ {}'.format(self.observations, self.cyclic_granularity))
 
         # Histogram with the statistics gotten from each permutation
-        axs[1].hist(res.null_distribution, bins=100)
+        axs[1].hist(res.null_distribution, bins=100, color='#B20E0F')
         axs[1].set_title("Permutation distribution of test statistic")
         axs[1].set_xlabel("Value of Statistic")
         axs[1].set_ylabel("Frequency")
-        axs[1].axvline(res.statistic, color='red', linestyle='dashed', linewidth=2)
+        axs[1].axvline(res.statistic, color='black', linestyle='dashed', linewidth=2)
         axs[1].text(axs[1].get_xlim()[1]*0.97, axs[1].get_ylim()[1]*0.95, 'Statistic: {:.4f}\np-value: {:.4f}'.format(res.statistic, res.pvalue), ha='right', va='top', fontsize=12)
         plt.show()
 
